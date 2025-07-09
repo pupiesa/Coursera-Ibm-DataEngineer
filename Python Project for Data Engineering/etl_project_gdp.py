@@ -15,20 +15,31 @@ table_attribs = ['Country', 'GDP_USD_millions']
 db_name = 'World_Economies.db'
 table_name = 'Countries_by_GDP'
 csv_path = 'Countries_by_GDP.csv'
-html_page = requests.get(url).text
-data = BeautifulSoup(html_page, 'html.parser')
-df = pd.DataFrame(columns= table_attribs)
-table = data.find_all('tbody')
-rows = table[2].find_all('tr')
-for row in rows:
-    cols = row.find_all('td')
-    if not cols
+
 def extract(url, table_attribs):
     # ''' This function extracts the required
     # information from the website and saves it to a dataframe. The
     # function returns the dataframe for further processing. '''
-    
+    html_page = requests.get(url).text
+    data = BeautifulSoup(html_page, 'html.parser')
+    df = pd.DataFrame(columns= table_attribs)
+    table = data.find_all('tbody')
+    rows = table[2].find_all('tr')
+    for row in rows:
+        cols = row.find_all('td')
+        if not cols:
+            continue
+        if not cols[0].find('a'):
+            continue
+        if cols[2].text.strip() == '—':
+            continue
+        data = {
+            'Country': cols[0].text.strip(), 
+            'GDP_USD_millions': cols[2].text.strip()
+            }
 
+        df = pd.concat([df,pd.DataFrame([data])], ignore_index = True)
+    
     return df
 
 def transform(df):
@@ -36,7 +47,10 @@ def transform(df):
     # format to float value, transforms the information of GDP from
     # USD (Millions) to USD (Billions) rounding to 2 decimal places.
     # The function returns the transformed dataframe.'''
-
+    df['GDP_USD_millions'] = df['GDP_USD_millions'].astype(float)
+    df['GDP_USD_millions'] = (df['GDP_USD_millions'] / 1000).round(2)
+    df = df.rename(columns={'GDP_USD_millions':'GDP_USD_billions'})
+    
     return df
 
 def load_to_csv(df, csv_path):
