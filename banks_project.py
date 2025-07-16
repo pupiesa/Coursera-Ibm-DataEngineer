@@ -5,7 +5,7 @@ import sqlite3
 import numpy
 from datetime import datetime
 
-data_url = 'https://web.archive.org/web/20230908091635 /https://en.wikipedia.org/wiki/List_of_largest_banks'
+data_url = 'https://web.archive.org/web/20230908091635/https://en.wikipedia.org/wiki/List_of_largest_banks'
 extract_table_attrb = ['Name', 'MC_USD_Billion']
 output_csv_path = 'Largest_banks_data.csv'
 db_name = 'Band.db'
@@ -26,14 +26,25 @@ def extract(url, table_attribs):
     ''' This function aims to extract the required
     information from the website and save it to a data frame. The
     function returns the data frame for further processing. '''
+    response = requests.get(data_url)
+    content = response.text
 
-    return df
+    soup = BeautifulSoup(content,'html.parser')
+    table = soup.find_all('table')[0]
+    rows = table.find_all('tr')
+    # print(row)
+    df = pd.DataFrame(columns= table_attribs)
+    for index,value in enumerate(rows):
+        data = value.find_all('tr')
+        print(data)
+    # return df
 
 def transform(df, csv_path):
     ''' This function accesses the CSV file for exchange rate
     information, and adds three columns to the data frame, each
     containing the transformed version of Market Cap column to
     respective currencies'''
+    
     return df
 def load_to_csv(df, output_path):
     ''' This function saves the final data frame as a CSV file in
@@ -49,3 +60,4 @@ def run_query(query_statement, sql_connection):
 ''' Here, you define the required entities and call the relevant
 functions in the correct order to complete the project. Note that this
 portion is not inside any function.'''
+extract(data_url,extract_table_attrb)
