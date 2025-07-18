@@ -34,9 +34,13 @@ def extract(url, table_attribs):
     rows = table.find_all('tr')
     # print(row)
     df = pd.DataFrame(columns= table_attribs)
-    for index,value in enumerate(rows):
-        data = value.find_all('tr')
-        print(data)
+    for row in rows[1:]:
+        cols = row.find_all('td')
+        if len(cols) >= 2:
+            name = cols[1].text.strip()
+            market_cap = cols[2].text.strip()
+            print(name, market_cap)
+        df = pd.concat([df,])
     # return df
 
 def transform(df, csv_path):
