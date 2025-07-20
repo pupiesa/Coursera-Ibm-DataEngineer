@@ -7,6 +7,7 @@ from datetime import datetime
 
 data_url = 'https://web.archive.org/web/20230908091635/https://en.wikipedia.org/wiki/List_of_largest_banks'
 extract_table_attrb = ['Name', 'MC_USD_Billion']
+csv_path = 'exchange_rate.csv'
 output_csv_path = 'Largest_banks_data.csv'
 db_name = 'Band.db'
 table_name = 'Largest_banks'
@@ -36,19 +37,26 @@ def extract(url, table_attribs):
     df = pd.DataFrame(columns= table_attribs)
     for row in rows[1:]:
         cols = row.find_all('td')
-        if len(cols) >= 2:
+        if len(cols) >= 3:
             name = cols[1].text.strip()
             market_cap = cols[2].text.strip()
-            print(name, market_cap)
-        df = pd.concat([df,])
-    # return df
+            try:
+                market_cap = float(market_cap)
+            except:
+                continue        
+            new_row = pd.DataFrame([[name,market_cap]], columns = table_attribs)
+            df = pd.concat([df,new_row], ignore_index=True)
+    print(df)
+    return df
 
 def transform(df, csv_path):
     ''' This function accesses the CSV file for exchange rate
     information, and adds three columns to the data frame, each
     containing the transformed version of Market Cap column to
     respective currencies'''
-    
+    ex_rate = pd.read_csv(csv_path)
+    ex_rate = ex_rate.to_dict()
+    print(ex_rate)
     return df
 def load_to_csv(df, output_path):
     ''' This function saves the final data frame as a CSV file in
@@ -64,4 +72,5 @@ def run_query(query_statement, sql_connection):
 ''' Here, you define the required entities and call the relevant
 functions in the correct order to complete the project. Note that this
 portion is not inside any function.'''
-extract(data_url,extract_table_attrb)
+df = extract(data_url,extract_table_attrb)
+transform(df,csv_path)
